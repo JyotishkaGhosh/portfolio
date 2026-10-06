@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useMemo, useState } from "react";
 import {
   aboutMe, education, featured, jobs, me, more, quotes, receipts, stats, toolkit, type Project,
 } from "../content";
-import { JobCover, ProjectCover, QuoteCover, StatCover } from "./Covers";
+import { JobCover, PairBox, ProjectCover, QuoteCover, StatCover } from "./Covers";
 import { Bow, Heart, Sparkle } from "./Decor";
 import Decorate from "./Decorate";
 import ThemeToggle from "./ThemeToggle";
@@ -22,7 +22,8 @@ type Pin = {
   id: string;
   cat: Cat;
   title?: string;   // caption under the pin
-  h: number;        // rough height, used to balance the columns
+  h: number;        // height ≈ 3 × (pin height ÷ width) at desktop, used to balance the columns
+  hPhone: number;   // the same at phone width (2 columns), where text wraps far more
   cover: (big: boolean) => ReactNode;
   detail?: Detail;
   href?: string;
@@ -38,12 +39,13 @@ const chips: { id: "all" | Cat; label: string }[] = [
 
 const host = (u: string) => u.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
-function projectPin(p: Project, h: number): Pin {
+function projectPin(p: Project, h: number, hPhone: number): Pin {
   return {
     id: p.name,
     cat: "projects",
     title: p.name + " — " + p.kicker,
     h,
+    hPhone,
     href: p.live,
     cover: (big) => <ProjectCover p={p} big={big} />,
     detail: {
@@ -67,7 +69,8 @@ function buildPins(): Pin[] {
   const statPins: Pin[] = stats.map((s, i) => ({
     id: "stat" + i,
     cat: "wins",
-    h: 2,
+    h: [2.1, 1.9, 1.9][i] ?? 2,
+    hPhone: [4, 3.3, 3.3][i] ?? 3.6,
     cover: (big) => (
       <StatCover
         big={big}
@@ -80,13 +83,16 @@ function buildPins(): Pin[] {
   const quotePins: Pin[] = quotes.map((q, i) => ({
     id: "quote" + i,
     cat: "about",
-    h: 2.4,
-    cover: (big) => <QuoteCover text={q.text} tone={q.tone} big={big} />,
+    // the statement quote (index 1) is paired with the intro pin, so it shares its height
+    h: [2.6, 3.1][i] ?? 2.8,
+    hPhone: [4.5, 7.1][i] ?? 5,
+    cover: (big) => <QuoteCover text={q.text} tone={q.tone} big={big} paired={i === 1} />,
   }));
-  const jobPin = (j: (typeof jobs)[number], h: number): Pin => ({
+  const jobPin = (j: (typeof jobs)[number], h: number, hPhone: number): Pin => ({
     id: j.company,
     cat: "work",
     h,
+    hPhone,
     cover: (big) => <JobCover j={j} big={big} />,
     detail: {
       kicker: `${j.role} · ${j.when} · ${j.where}`,
@@ -99,20 +105,29 @@ function buildPins(): Pin[] {
   const aboutPin: Pin = {
     id: "about",
     cat: "about",
-    h: 2.6,
-    cover: () => (
-      <div className="bg-pearl px-6 py-8">
-        <p className="font-script text-4xl text-berry">hello, I&apos;m</p>
-        <p className="font-serif text-2xl italic">{me.first}</p>
-        <ul className="mt-5 space-y-3">
-          {aboutMe.map((a) => (
-            <li key={a} className="flex gap-2 text-sm leading-snug text-wine">
-              <Heart size={12} className="mt-1 shrink-0 text-rose" /> {a}
-            </li>
-          ))}
-        </ul>
-      </div>
-    ),
+    h: 3.1,
+    hPhone: 7.1,
+    cover: (big) => {
+      const hello = (
+        <>
+          <p className="font-script text-4xl text-berry">hello, I&apos;m</p>
+          <p className="font-serif text-2xl italic">{me.first}</p>
+          <ul className="mt-5 space-y-3">
+            {aboutMe.map((a) => (
+              <li key={a} className="flex gap-2 text-sm leading-snug text-wine">
+                <Heart size={12} className="mt-1 shrink-0 text-rose" /> {a}
+              </li>
+            ))}
+          </ul>
+        </>
+      );
+      // on the board it's paired with the statement quote; the close-up shows it on its own
+      return big ? (
+        <div className="flex flex-col justify-center bg-pearl px-6 py-10">{hello}</div>
+      ) : (
+        <PairBox className="flex flex-col justify-center bg-pearl px-6 py-8">{hello}</PairBox>
+      );
+    },
     detail: { kicker: me.headline, title: `${me.first} ${me.last}`, body: me.intro, points: aboutMe },
   };
 
@@ -120,7 +135,8 @@ function buildPins(): Pin[] {
     id: "toolkit",
     cat: "about",
     title: "my toolkit",
-    h: 3.4,
+    h: 6.4,
+    hPhone: 14.7,
     cover: () => (
       <div className="bg-blush px-5 py-7">
         <p className="font-serif text-2xl italic">the toolkit</p>
@@ -142,7 +158,8 @@ function buildPins(): Pin[] {
     id: "edu",
     cat: "wins",
     title: education.degree,
-    h: 2.2,
+    h: 2.5,
+    hPhone: 5,
     cover: () => (
       <div className="satin px-6 py-9">
         <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-wine/70">{education.when} · CGPA</span>
@@ -156,7 +173,8 @@ function buildPins(): Pin[] {
     id: "receipts",
     cat: "wins",
     title: "the receipts",
-    h: 3,
+    h: 3.6,
+    hPhone: 9.3,
     cover: () => (
       <div className="wine-card px-6 py-8">
         <p className="font-script text-4xl text-rose">the receipts</p>
@@ -175,7 +193,8 @@ function buildPins(): Pin[] {
     id: "contact",
     cat: "about",
     title: "say hi",
-    h: 2.4,
+    h: 2.6,
+    hPhone: 5.3,
     href: `mailto:${me.email}`,
     cover: () => (
       <div className="berry-card relative flex flex-col items-center px-6 py-10 text-center">
@@ -195,27 +214,27 @@ function buildPins(): Pin[] {
 
   // order reads left → right; columns are balanced by height below
   return [
+    // top row opens with intro + statement side by side (same height), then ₹35L and the four products
     aboutPin,
-    projectPin(kairo, 2.8),
-    statPins[0],
-    jobPin(lead, 3.6),
-    projectPin(signal, 2.8),
-    quotePins[0],
-    statPins[1],
-    projectPin(more[0], 2.8),
-    toolPin,
-    jobPin(rest[0], 1.6),
-    eduPin,
-    projectPin(more[1], 2.8),
-    statPins[3],
-    receiptsPin,
     quotePins[1],
-    jobPin(rest[2], 1.6),
     statPins[2],
-    jobPin(rest[1], 1.6),
-    quotePins[2],
-    jobPin(rest[3], 1.6),
+    projectPin(kairo, 3.2, 4.3),
+    projectPin(signal, 3.2, 4.3),
+    projectPin(more[0], 3.2, 4.05),
+    projectPin(more[1], 3.2, 4.3),
+    jobPin(lead, 3.6, 5.7),
+    // the rest is ordered so the columns end level at 2–5 columns — re-check heights if you add pins
+    jobPin(rest[2], 1.6, 3.6),
+    toolPin,
+    eduPin,
+    statPins[1],
+    quotePins[0],
+    jobPin(rest[0], 1.8, 3.3),
+    jobPin(rest[3], 1.8, 3.7),
+    receiptsPin,
     contactPin,
+    statPins[0],
+    jobPin(rest[1], 1.8, 2.9),
   ];
 }
 
@@ -410,7 +429,7 @@ export default function Board() {
   shown.forEach((p) => {
     const i = heights.indexOf(Math.min(...heights));
     columns[i].push(p);
-    heights[i] += p.h + 0.4;
+    heights[i] += (cols === 2 ? p.hPhone : p.h) + 0.4;
   });
 
   return (
@@ -461,7 +480,12 @@ export default function Board() {
         </p>
         <p className="relative mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-ink/80">{me.intro}</p>
         <p className="relative mt-4 text-sm font-bold">
-          5 internships <span className="text-rose">·</span> 4 shipped projects <span className="text-rose">·</span> ₹35L closed
+          {me.highlights.map((h, i) => (
+            <span key={h}>
+              {i > 0 && <span className="text-rose"> · </span>}
+              {h}
+            </span>
+          ))}
         </p>
         <div className="relative mt-5 flex flex-wrap justify-center gap-2">
           <a href={`mailto:${me.email}`} className="rounded-full bg-berry px-6 py-3 text-sm font-bold text-snow transition hover:bg-wine dark:hover:bg-rose dark:hover:text-paper">

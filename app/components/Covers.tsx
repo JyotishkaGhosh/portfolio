@@ -1,7 +1,7 @@
 "use client";
 // The artwork on each pin. Pure visuals — no state.
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { type Job, type Project } from "../content";
 import { Bow, Heart, Sparkle } from "./Decor";
 
@@ -14,7 +14,7 @@ const tones: Record<string, string> = {
   petal: "bg-gradient-to-b from-petal to-petal-deep text-ink",
 };
 
-export function ScoreRing({ big = false }: { big?: boolean }) {
+export function ScoreRing({ value, big = false }: { value: string; big?: boolean }) {
   const r = 70;
   const c = 2 * Math.PI * r;
   return (
@@ -34,8 +34,8 @@ export function ScoreRing({ big = false }: { big?: boolean }) {
         </defs>
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`font-serif italic text-berry ${big ? "text-6xl" : "text-4xl"}`}>96%</span>
-        <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-wine/70">won · score 90+</span>
+        <span className={`font-serif italic text-berry ${big ? "text-6xl" : "text-4xl"}`}>{value}</span>
+        <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-wine/70">scored 90%+ won</span>
       </div>
     </div>
   );
@@ -108,8 +108,8 @@ export function ProjectCover({ p, big = false }: { p: Project; big?: boolean }) 
       <div className={`satin relative flex flex-col items-center justify-center gap-4 px-5 ${big ? "min-h-[28rem]" : "py-10"}`}>
         <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-wine/70">{p.kicker}</span>
         <h3 className={`font-serif italic leading-none text-ink ${big ? "text-7xl" : "text-[2.4rem] sm:text-5xl"}`}>Kairo</h3>
-        <ScoreRing big={big} />
-        <p className="max-w-[16rem] text-center text-xs leading-relaxed text-wine/80">of deals the model scored 90%+ actually closed — 195-deal backtest</p>
+        {p.metric && <ScoreRing value={p.metric.value} big={big} />}
+        {p.metric && <p className="max-w-[16rem] text-center text-xs leading-relaxed text-wine/80">{p.metric.label}</p>}
         <Sparkle className="absolute right-5 top-5 text-berry" />
       </div>
     );
@@ -137,14 +137,57 @@ export function ProjectCover({ p, big = false }: { p: Project; big?: boolean }) 
   );
 }
 
-export function QuoteCover({ text, tone, big = false }: { text: string; tone: string; big?: boolean }) {
+// The intro and statement pins open the board side by side, so they share one height:
+// each PairBox measures its own content and every box takes the tallest.
+const pair = new Set<{ box: HTMLDivElement; content: HTMLDivElement }>();
+function syncPair() {
+  let tallest = 0;
+  pair.forEach(({ box, content }) => {
+    const s = getComputedStyle(box);
+    tallest = Math.max(tallest, content.offsetHeight + parseFloat(s.paddingTop) + parseFloat(s.paddingBottom));
+  });
+  pair.forEach(({ box }) => (box.style.minHeight = pair.size > 1 ? `${tallest}px` : ""));
+}
+
+export function PairBox({ className, inner = "", children }: { className: string; inner?: string; children: ReactNode }) {
+  const box = useRef<HTMLDivElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!box.current || !content.current) return;
+    const entry = { box: box.current, content: content.current };
+    pair.add(entry);
+    const ro = new ResizeObserver(syncPair);
+    ro.observe(entry.content);
+    return () => {
+      ro.disconnect();
+      pair.delete(entry);
+      entry.box.style.minHeight = "";
+      syncPair();
+    };
+  }, []);
   return (
-    <div className={`relative flex flex-col items-center justify-center px-6 text-center ${tones[tone]} ${big ? "min-h-[24rem] py-16" : "py-12"}`}>
+    <div ref={box} className={className}>
+      <div ref={content} className={inner}>{children}</div>
+    </div>
+  );
+}
+
+export function QuoteCover({ text, tone, big = false, paired = false }: { text: string; tone: string; big?: boolean; paired?: boolean }) {
+  const body = (
+    <>
       <Bow size={big ? 70 : 46} className="mb-4" />
       <p className={`font-serif italic leading-snug ${big ? "text-4xl" : "text-[1.05rem] sm:text-[1.35rem]"}`}>“{text}”</p>
       <span className="mt-4 font-script text-2xl opacity-80">Jyotishka</span>
-    </div>
+    </>
   );
+  const box = `relative flex flex-col items-center justify-center px-6 text-center ${tones[tone]} ${big ? "min-h-[24rem] py-16" : "py-12"}`;
+  if (paired && !big)
+    return (
+      <PairBox className={box} inner="flex flex-col items-center">
+        {body}
+      </PairBox>
+    );
+  return <div className={box}>{body}</div>;
 }
 
 export function StatCover({

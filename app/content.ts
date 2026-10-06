@@ -11,23 +11,14 @@ export const me = {
   linkedin: "https://www.linkedin.com/in/jyotishka-ghosh-5470b228a/",
   resume: "/Jyotishka_Ghosh_Resume.pdf",
   location: "Kolkata, India",
+  // the bold line under the intro
+  highlights: ["5 internships", "4 live products"],
 };
 
-export const ribbon = [
-  "₹35L ACV closed",
-  "87.5% pipeline-to-close",
-  "96% win rate on top-scored deals",
-  "10,000+ outreach touches",
-  "200+ candidates interviewed",
-  "9.2 CGPA",
-  "SIH top teams ×2",
-];
-
-export const stats = [
-  { value: 35, prefix: "₹", suffix: "L", label: "enterprise ACV closed in 8 months" },
+export const stats: { value: number; prefix?: string; suffix: string; label: string; decimals?: number }[] = [
+  { value: 96, suffix: "%", label: "of deals scored 90%+ won — 195-deal backtest on simulated data" },
   { value: 87.5, suffix: "%", label: "pipeline-to-close conversion", decimals: 1 },
-  { value: 40, suffix: "%", label: "reply rate across 10k+ touches" },
-  { value: 96, suffix: "%", label: "win rate my model predicted on 90%+ scored deals" },
+  { value: 35, prefix: "₹", suffix: "L", label: "enterprise ACV closed in 8 months" },
 ];
 
 export type Project = {
@@ -48,9 +39,9 @@ export const featured: Project[] = [
     name: "Kairo",
     kicker: "AI-powered CRM & sales intelligence",
     blurb:
-      "I spent months closing deals by gut feel. Kairo is the tool I wished I had — it turns raw CRM data into who to call, what to say, and what will close.",
+      "I spent months closing deals by gut feel. Kairo is the tool I wished I had — it turns CRM data into who to call, what to say, and what will close. It runs on a realistic simulation of 18 months of B2B SaaS sales, not a real company's pipeline.",
     points: [
-      "Simulated 18 months of B2B SaaS sales data — reps, accounts, leads, deals, stage history — modelled in DuckDB with daily point-in-time snapshots so nothing leaks from the future.",
+      "Built a realistic simulation of 18 months of B2B SaaS sales — reps, accounts, leads, deals, stage history — modelled in DuckDB with daily point-in-time snapshots so nothing leaks from the future.",
       "Trained lead-scoring and win-probability models tracked in MLflow; caught and removed a target-leakage feature (the rep's own forecast).",
       "Gemini-written deal briefings grounded only in model outputs, flagging close-date slippage and rep-vs-model gaps.",
       "Explainable next-best-actions and a backtested pipeline forecast, refreshed daily by GitHub Actions.",
@@ -58,7 +49,7 @@ export const featured: Project[] = [
     stack: ["Python", "SQL", "DuckDB", "Parquet", "MLflow", "Gemini API", "GitHub Actions", "Vercel"],
     live: "https://kairo-five-nu.vercel.app/",
     image: "/pins/kairo.png",
-    metric: { value: "96%", label: "of deals scored 90%+ actually won · 195-deal backtest" },
+    metric: { value: "96%", label: "of deals scored 90%+ won — 195-deal backtest on simulated data" },
   },
   {
     name: "SignalStack",
@@ -190,7 +181,6 @@ export const receipts = [
 
 // ✦ little mood pins scattered across the board
 export const quotes = [
-  { text: "Pink is a power color.", tone: "berry" },
   { text: "I build software for the person I used to be.", tone: "cream" },
   { text: "Most engineers have never sold. Most sellers have never shipped. I've done both.", tone: "wine" },
 ];
