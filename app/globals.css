@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #fff7fa;
+  --color-blush: #ffe6ef;
+  --color-petal: #ffcade;
+  --color-rose: #f39bbd;
+  --color-berry: #d6336c;
+  --color-wine: #8a2450;
+  --color-ink: #3d0f26;
+  --color-pearl: #fffaf6;
+
+  --font-serif: 'Bodoni Moda Variable', 'Didot', Georgia, serif;
+  --font-script: 'Pinyon Script', cursive;
+  --font-sans: 'DM Sans Variable', system-ui, sans-serif;
+
+  --animate-marquee: marquee 45s linear infinite;
+  --animate-drift: drift 9s ease-in-out infinite;
+  --animate-sheen: sheen 9s ease-in-out infinite;
+}
+
+@keyframes marquee { to { transform: translateX(-50%); } }
+@keyframes drift {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-18px) rotate(6deg); }
+}
+@keyframes sheen {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+::selection { background: var(--color-petal); color: var(--color-wine); }
+
+/* satin: soft folds of pink with a slow moving sheen */
+.satin {
+  background:
+    radial-gradient(60% 50% at 15% 20%, rgba(255,255,255,.85), transparent 60%),
+    radial-gradient(50% 60% at 85% 10%, #ffd3e3 0%, transparent 65%),
+    radial-gradient(70% 60% at 70% 90%, #ffc0d6 0%, transparent 60%),
+    linear-gradient(115deg, #fff4f8 0%, #ffe1ec 30%, #fff8fb 48%, #ffd6e5 66%, #fff1f6 100%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 300% 300%;
+  animation: sheen 14s ease-in-out infinite;
+}
+
+.satin-band {
+  background: linear-gradient(100deg, #f7a8c6 0%, #ffd9e7 22%, #f48fb6 45%, #ffe3ee 62%, #f39bbd 82%, #ffd2e3 100%);
+  background-size: 250% 100%;
+  animation: sheen 10s ease-in-out infinite;
+}
+
+.rose-gold {
+  background: linear-gradient(100deg, #b8285f 0%, #e55a8f 35%, #f7a8c6 50%, #d6336c 70%, #8a2450 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sheen 8s ease-in-out infinite;
+}
+
+.invite {
+  background: var(--color-pearl);
+  box-shadow:
+    0 0 0 1px #f6c4d6,
+    0 0 0 8px var(--color-pearl),
+    0 0 0 9px #f3b3ca,
+    0 30px 60px -20px rgba(214, 51, 108, .28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+}
