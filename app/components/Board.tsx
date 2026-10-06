@@ -6,7 +6,8 @@ import {
 } from "../content";
 import { JobCover, ProjectCover, QuoteCover, StatCover } from "./Covers";
 import { Bow, Heart, Sparkle } from "./Decor";
-import Photo from "./Photo";
+import Decorate from "./Decorate";
+import ThemeToggle from "./ThemeToggle";
 
 type Cat = "projects" | "work" | "wins" | "about";
 type Detail = {
@@ -95,19 +96,6 @@ function buildPins(): Pin[] {
     },
   });
 
-  const photoPin: Pin = {
-    id: "me",
-    cat: "about",
-    title: "that's me ✦",
-    h: 3.6,
-    cover: () => (
-      <div className="relative">
-        <Photo className="aspect-[3/4] w-full" mono="text-8xl" />
-        <Bow size={64} className="absolute left-1/2 top-3 -translate-x-1/2 drop-shadow" />
-      </div>
-    ),
-  };
-
   const aboutPin: Pin = {
     id: "about",
     cat: "about",
@@ -125,7 +113,7 @@ function buildPins(): Pin[] {
         </ul>
       </div>
     ),
-    detail: { kicker: me.role, title: `${me.first} ${me.last}`, body: me.intro, points: aboutMe },
+    detail: { kicker: me.headline, title: `${me.first} ${me.last}`, body: me.intro, points: aboutMe },
   };
 
   const toolPin: Pin = {
@@ -170,7 +158,7 @@ function buildPins(): Pin[] {
     title: "the receipts",
     h: 3,
     cover: () => (
-      <div className="bg-gradient-to-b from-[#5a1634] to-[#3d0f26] px-6 py-8 text-blush">
+      <div className="wine-card px-6 py-8">
         <p className="font-script text-4xl text-rose">the receipts</p>
         <ul className="mt-4 space-y-2.5">
           {receipts.map((r) => (
@@ -190,9 +178,9 @@ function buildPins(): Pin[] {
     h: 2.4,
     href: `mailto:${me.email}`,
     cover: () => (
-      <div className="relative flex flex-col items-center bg-berry px-6 py-10 text-center text-pearl">
+      <div className="berry-card relative flex flex-col items-center px-6 py-10 text-center">
         <div className="relative mb-5 h-16 w-24">
-          <div className="absolute inset-0 rounded-md bg-pearl" />
+          <div className="absolute inset-0 rounded-md bg-snow" />
           <div
             className="absolute inset-x-0 top-0 h-10 bg-petal"
             style={{ clipPath: "polygon(0 0, 100% 0, 50% 100%)" }}
@@ -207,27 +195,25 @@ function buildPins(): Pin[] {
 
   // order reads left → right; columns are balanced by height below
   return [
-    photoPin,
-    projectPin(kairo, 3.8),
-    quotePins[0],
+    aboutPin,
+    projectPin(kairo, 2.8),
     statPins[0],
     jobPin(lead, 3.6),
-    projectPin(signal, 3.6),
-    aboutPin,
+    projectPin(signal, 2.8),
+    quotePins[0],
     statPins[1],
-    projectPin(more[0], 2),
-    quotePins[1],
+    projectPin(more[0], 2.8),
     toolPin,
     jobPin(rest[0], 1.6),
     eduPin,
-    projectPin(more[1], 2),
+    projectPin(more[1], 2.8),
     statPins[3],
     receiptsPin,
-    quotePins[2],
+    quotePins[1],
     jobPin(rest[2], 1.6),
     statPins[2],
     jobPin(rest[1], 1.6),
-    quotePins[3],
+    quotePins[2],
     jobPin(rest[3], 1.6),
     contactPin,
   ];
@@ -262,17 +248,17 @@ function PinCard({ pin, saved, onSave, onOpen }: { pin: Pin; saved: boolean; onS
         tabIndex={0}
         onClick={onOpen}
         onKeyDown={(e) => e.key === "Enter" && onOpen()}
-        className="group relative cursor-zoom-in overflow-hidden rounded-[1.4rem] shadow-[0_6px_24px_-12px_rgba(138,36,80,.35)] transition-shadow hover:shadow-[0_18px_40px_-14px_rgba(214,51,108,.45)]"
+        className="group relative cursor-zoom-in overflow-hidden rounded-[1.4rem] shadow-[0_6px_24px_-12px_var(--pin-shadow)] transition-shadow hover:shadow-[0_18px_40px_-14px_rgba(214,51,108,.45)]"
       >
         {pin.cover(false)}
-        <div className="pointer-events-none absolute inset-0 bg-ink/0 transition-colors duration-300 group-hover:bg-ink/25" />
+        <div className="pointer-events-none absolute inset-0 bg-ink/0 transition-colors duration-300 group-hover:bg-veil/25" />
         <button
           onClick={(e) => {
             e.stopPropagation();
             onSave();
           }}
           className={`absolute right-3 top-3 rounded-full px-4 py-2 text-sm font-bold shadow transition-all ${
-            saved ? "bg-ink text-pearl" : "hidden bg-berry text-pearl opacity-0 group-hover:opacity-100 md:block"
+            saved ? "bg-ink text-pearl" : "hidden bg-berry text-snow opacity-0 group-hover:opacity-100 md:block"
           }`}
         >
           {saved ? "Saved ♡" : "Save"}
@@ -290,10 +276,7 @@ function PinCard({ pin, saved, onSave, onOpen }: { pin: Pin; saved: boolean; onS
         )}
       </div>
       {pin.title && (
-        <div className="mt-2 flex items-center gap-2 px-1">
-          {pin.cat === "projects" && <Photo className="h-6 w-6 shrink-0 rounded-full" mono="text-[9px]" />}
-          <p className="truncate text-[13px] font-semibold text-ink/85">{pin.title}</p>
-        </div>
+        <p className="mt-2 truncate px-1 text-[13px] font-semibold text-ink/85">{pin.title}</p>
       )}
     </motion.div>
   );
@@ -316,7 +299,7 @@ function CloseUp({ pin, saved, onSave, onClose }: { pin: Pin; saved: boolean; on
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/45 p-3 backdrop-blur-sm md:items-center md:p-8"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-veil/55 p-3 backdrop-blur-sm md:items-center md:p-8"
     >
       <motion.div
         initial={{ y: 40, scale: 0.97 }}
@@ -340,7 +323,7 @@ function CloseUp({ pin, saved, onSave, onClose }: { pin: Pin; saved: boolean; on
               <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-berry">{d.kicker}</span>
               <button
                 onClick={onSave}
-                className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-bold ${saved ? "bg-ink text-pearl" : "bg-berry text-pearl"}`}
+                className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-bold ${saved ? "bg-ink text-pearl" : "bg-berry text-snow"}`}
               >
                 {saved ? "Saved ♡" : "Save"}
               </button>
@@ -381,10 +364,9 @@ function CloseUp({ pin, saved, onSave, onClose }: { pin: Pin; saved: boolean; on
               </div>
             )}
             <div className="mt-auto flex items-center gap-3 border-t border-petal pt-6">
-              <Photo className="h-11 w-11 rounded-full" mono="text-sm" />
               <div className="flex-1">
                 <p className="text-sm font-bold">{me.first} {me.last}</p>
-                <p className="text-xs text-wine/70">{me.role}</p>
+                <p className="text-xs text-wine/70">{me.headline}</p>
               </div>
               <a href={`mailto:${me.email}`} className="rounded-full bg-blush px-4 py-2 text-sm font-bold hover:bg-petal">
                 Message
@@ -436,7 +418,7 @@ export default function Board() {
       {/* top bar */}
       <header className="sticky top-0 z-40 border-b border-petal/60 bg-paper/85 backdrop-blur-md">
         <div className="flex items-center gap-3 px-3 py-3 md:px-6">
-          <a href="#top" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-berry font-serif text-xl italic text-pearl">
+          <a href="#top" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-berry font-serif text-xl italic text-snow">
             J
           </a>
           <span className="hidden rounded-full bg-ink px-4 py-2.5 text-sm font-bold text-pearl md:block">Board</span>
@@ -455,9 +437,7 @@ export default function Board() {
               className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-wine/50"
             />
           </label>
-          <a href="#contact" onClick={(e) => { e.preventDefault(); setFilter("all"); setQuery(""); setOpen(pins.find((p) => p.id === "contact") ?? null); }} className="shrink-0">
-            <Photo className="h-10 w-10 rounded-full ring-2 ring-petal" mono="text-xs" />
-          </a>
+          <ThemeToggle />
         </div>
       </header>
 
@@ -466,16 +446,16 @@ export default function Board() {
         <div className="satin absolute inset-x-0 top-0 h-56 opacity-80" />
         <div className="relative mx-auto w-fit">
           <Bow size={76} className="absolute -top-8 left-1/2 z-10 -translate-x-1/2 animate-drift" />
-          <div className="rounded-full bg-pearl p-1.5 shadow-[0_0_0_3px_#ffcade,0_0_0_7px_#fff7fa,0_0_0_8px_#f39bbd]">
-            <Photo className="h-32 w-32 rounded-full md:h-40 md:w-40" mono="text-5xl" />
+          <div className="rounded-full bg-pearl p-1.5 shadow-[0_0_0_3px_var(--color-petal),0_0_0_7px_var(--color-paper),0_0_0_8px_var(--color-rose)]">
+            <div className="satin flex h-32 w-32 items-center justify-center rounded-full md:h-40 md:w-40">
+              <span className="rose-gold font-serif text-5xl italic md:text-6xl" aria-hidden="true">JG</span>
+            </div>
           </div>
         </div>
         <h1 className="relative mt-6 font-serif text-5xl font-medium italic tracking-tight md:text-7xl">
           {me.first} <span className="not-italic">{me.last}</span>
         </h1>
-        <p className="relative mt-2 font-script text-3xl text-berry md:text-4xl">
-          soft heart, sharp mind, closed deals
-        </p>
+        <p className="relative mt-3 font-serif text-2xl italic text-berry md:text-3xl">{me.headline}</p>
         <p className="relative mt-3 text-sm font-semibold text-wine">
           @jyotishkaghosh · {me.location}
         </p>
@@ -484,7 +464,7 @@ export default function Board() {
           5 internships <span className="text-rose">·</span> 4 shipped projects <span className="text-rose">·</span> ₹35L closed
         </p>
         <div className="relative mt-5 flex flex-wrap justify-center gap-2">
-          <a href={`mailto:${me.email}`} className="rounded-full bg-berry px-6 py-3 text-sm font-bold text-pearl transition hover:bg-wine">
+          <a href={`mailto:${me.email}`} className="rounded-full bg-berry px-6 py-3 text-sm font-bold text-snow transition hover:bg-wine dark:hover:bg-rose dark:hover:text-paper">
             Message me
           </a>
           <a href={me.resume} target="_blank" className="rounded-full bg-blush px-6 py-3 text-sm font-bold transition hover:bg-petal">
@@ -552,6 +532,8 @@ export default function Board() {
           © 2026 {me.first} {me.last} · designed & built by me · pink on purpose
         </p>
       </footer>
+
+      <Decorate />
 
       <AnimatePresence>
         {open && <CloseUp pin={open} saved={saved.has(open.id)} onSave={() => toggle(open.id)} onClose={() => setOpen(null)} />}

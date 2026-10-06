@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* `dark:` follows the data-theme attribute set in layout.tsx, not the media query */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --color-paper: #fff7fa;
   --color-blush: #ffe6ef;
@@ -9,6 +12,9 @@
   --color-wine: #8a2450;
   --color-ink: #3d0f26;
   --color-pearl: #fffaf6;
+  --color-petal-deep: #ffb3cd;
+  --color-snow: #fffaf6;   /* always light — text on berry / wine cards */
+  --color-veil: #3d0f26;   /* overlays and backdrops */
 
   --font-serif: 'Bodoni Moda Variable', 'Didot', Georgia, serif;
   --font-script: 'Pinyon Script', cursive;
@@ -29,7 +35,70 @@
   50% { background-position: 100% 50%; }
 }
 
-html { scroll-behavior: smooth; }
+/* ✦ light is the default; dark swaps the same tokens so every component follows */
+:root {
+  color-scheme: light;
+  --pin-shadow: rgba(138, 36, 80, .35);
+  --satin-glow: rgba(255, 255, 255, .85);
+  --satin-a: #ffd3e3;
+  --satin-b: #ffc0d6;
+  --satin-1: #fff4f8;
+  --satin-2: #ffe1ec;
+  --satin-3: #fff8fb;
+  --satin-4: #ffd6e5;
+  --satin-5: #fff1f6;
+  --gold-1: #b8285f;
+  --gold-2: #e55a8f;
+  --gold-3: #f7a8c6;
+  --gold-4: #d6336c;
+  --gold-5: #8a2450;
+  --berry-from: #e04a83;
+  --berry-to: #a8204f;
+  --wine-from: #5a1634;
+  --wine-to: #3d0f26;
+  --bow-1: #ffd3e3;
+  --bow-2: #f48fb6;
+  --bow-3: #d6336c;
+}
+
+/* deep plum night — wine surfaces, blush & pearl text, pink still the accent */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-paper: #140810;
+  --color-pearl: #22101b;
+  --color-blush: #331526;
+  --color-petal: #4a1d35;
+  --color-petal-deep: #5e2343;
+  --color-rose: #f39bbd;
+  --color-berry: #ec5a92;
+  --color-wine: #f5b8cf;
+  --color-ink: #ffe8f0;
+  --color-veil: #060104;
+
+  --pin-shadow: rgba(0, 0, 0, .7);
+  --satin-glow: rgba(255, 190, 216, .13);
+  --satin-a: #4a1a33;
+  --satin-b: #3d1229;
+  --satin-1: #1f0b17;
+  --satin-2: #2e1022;
+  --satin-3: #1a0913;
+  --satin-4: #36142b;
+  --satin-5: #210c19;
+  --gold-1: #f48fb6;
+  --gold-2: #ffd3e3;
+  --gold-3: #f7a8c6;
+  --gold-4: #ff7aab;
+  --gold-5: #f39bbd;
+  --berry-from: #d93f7a;
+  --berry-to: #8c1c46;
+  --wine-from: #4a1530;
+  --wine-to: #2a0b1c;
+  --bow-1: #ffc4da;
+  --bow-2: #f48fb6;
+  --bow-3: #e2457f;
+}
+
+html { scroll-behavior: smooth; background: var(--color-paper); }
 
 body {
   background: var(--color-paper);
@@ -43,10 +112,10 @@ body {
 /* satin: soft folds of pink with a slow moving sheen */
 .satin {
   background:
-    radial-gradient(60% 50% at 15% 20%, rgba(255,255,255,.85), transparent 60%),
-    radial-gradient(50% 60% at 85% 10%, #ffd3e3 0%, transparent 65%),
-    radial-gradient(70% 60% at 70% 90%, #ffc0d6 0%, transparent 60%),
-    linear-gradient(115deg, #fff4f8 0%, #ffe1ec 30%, #fff8fb 48%, #ffd6e5 66%, #fff1f6 100%);
+    radial-gradient(60% 50% at 15% 20%, var(--satin-glow), transparent 60%),
+    radial-gradient(50% 60% at 85% 10%, var(--satin-a) 0%, transparent 65%),
+    radial-gradient(70% 60% at 70% 90%, var(--satin-b) 0%, transparent 60%),
+    linear-gradient(115deg, var(--satin-1) 0%, var(--satin-2) 30%, var(--satin-3) 48%, var(--satin-4) 66%, var(--satin-5) 100%);
   background-size: 100% 100%, 100% 100%, 100% 100%, 300% 300%;
   animation: sheen 14s ease-in-out infinite;
 }
@@ -58,13 +127,28 @@ body {
 }
 
 .rose-gold {
-  background: linear-gradient(100deg, #b8285f 0%, #e55a8f 35%, #f7a8c6 50%, #d6336c 70%, #8a2450 100%);
+  background: linear-gradient(100deg, var(--gold-1) 0%, var(--gold-2) 35%, var(--gold-3) 50%, var(--gold-4) 70%, var(--gold-5) 100%);
   background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   animation: sheen 8s ease-in-out infinite;
 }
+
+/* always-saturated cards: same mood in both themes, text stays light */
+.berry-card {
+  background: linear-gradient(to bottom right, var(--berry-from), var(--berry-to));
+  color: var(--color-snow);
+}
+.wine-card {
+  background: linear-gradient(160deg, var(--wine-from), var(--wine-to));
+  color: #ffe6ef;
+}
+[data-theme="dark"] .wine-card { box-shadow: inset 0 0 0 1px rgba(243, 155, 189, .14); }
+
+/* decorate mode: the whole page becomes a sticker canvas */
+.decorating, .decorating * { cursor: crosshair !important; }
+.decorating [data-decor-ui], .decorating [data-decor-ui] * { cursor: pointer !important; }
 
 .invite {
   background: var(--color-pearl);

@@ -9,16 +9,18 @@ Owner: Jyotishka Ghosh (GitHub: JyotishkaGhosh). Deployed on Vercel.
 - Don't read the current date/time during render (Next 16 prerender error) — hard-code values instead.
 - Fonts come from @fontsource packages imported in `app/layout.tsx`, not `next/font/google`.
 - Keep the look: soft pink "dreamy" palette (tokens in `app/globals.css`), Bodoni Moda serif, Pinyon Script, DM Sans, bows/hearts/sparkles.
+- Light + dark themes: colours are CSS variables in `app/globals.css` (`[data-theme="dark"]` block). Use the tokens (`bg-paper`, `text-ink`, `text-snow` for text on berry/wine cards, `bg-veil` for overlays) — never hard-code hex in components. `dark:` follows `data-theme`.
 - Run `npm run build` and `npx eslint app` after changes; both must pass.
 
 ## Where things live
 - `app/content.ts` — ALL text, links, numbers, projects, jobs. Edit content here, never in components.
-- `app/components/Board.tsx` — top bar, profile header, filter chips, masonry board, pin close-up.
+- `app/layout.tsx` — metadata + the inline script that sets `data-theme` before first paint.
+- `app/components/Board.tsx` — top bar, profile header (JG monogram), filter chips, masonry board, pin close-up.
+- `app/components/ThemeToggle.tsx` — sun/moon pill; saves the choice in localStorage (`theme`).
+- `app/components/Decorate.tsx` — "✦ decorate" sticker tray (client-only, max 60, nothing saved).
 - `app/components/Covers.tsx` — artwork for each pin type.
 - `app/components/Decor.tsx` — Bow, Heart, Sparkle SVGs.
-- `app/components/Photo.tsx` + `useImage.ts` — photo with monogram fallback.
-- `public/me.jpg` — her photo (monogram shows until it exists).
-- `public/pins/{kairo,signalstack,safar,matilda}.png` — project screenshots (designed covers show until they exist).
+- `public/pins/{kairo,signalstack,safar,matilda}.png` — 1280×800 project screenshots (designed covers show if a file is missing).
 - `public/Jyotishka_Ghosh_Resume.pdf` — résumé.
 
 ## Live projects (for screenshots)
@@ -26,6 +28,3 @@ Owner: Jyotishka Ghosh (GitHub: JyotishkaGhosh). Deployed on Vercel.
 - SignalStack — https://signalstack-theta.vercel.app/
 - Safar — https://safar-beta.vercel.app/
 - Matilda — https://neurodiverse-app.vercel.app/
-
-## Open to-do
-- Capture 1280×800 screenshots of the four live sites into `public/pins/` (e.g. a one-off Playwright script run with `npx`; don't add it as a project dependency).

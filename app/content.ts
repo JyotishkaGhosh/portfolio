@@ -3,12 +3,9 @@
 export const me = {
   first: "Jyotishka",
   last: "Ghosh",
-  role: "builder · seller · engineer",
-  line: ["Soft heart.", "Sharp mind.", "Closed deals."],
-  // ✦ put your photo in /public as me.jpg — until then a monogram shows instead
-  photo: "/me.jpg",
+  headline: "GTM Engineer",
   intro:
-    "CS undergrad who has sat on both sides of the table — owning enterprise deals end to end at AI startups, then going home to build the data pipelines and ML models that tell sales teams where to look next.",
+    "I'm a GTM engineer: I build the data pipelines, automations and ML models that tell revenue teams who to call, what to say and what will close. I've also run the deals myself — closing ₹35L in enterprise ACV at Anything.ai, first touch to signature.",
   email: "jyotishkaghosh8@gmail.com",
   github: "https://github.com/JyotishkaGhosh",
   linkedin: "https://www.linkedin.com/in/jyotishka-ghosh-5470b228a/",
@@ -193,7 +190,6 @@ export const receipts = [
 
 // ✦ little mood pins scattered across the board
 export const quotes = [
-  { text: "Soft heart. Sharp mind. Closed deals.", tone: "satin" },
   { text: "Pink is a power color.", tone: "berry" },
   { text: "I build software for the person I used to be.", tone: "cream" },
   { text: "Most engineers have never sold. Most sellers have never shipped. I've done both.", tone: "wine" },
