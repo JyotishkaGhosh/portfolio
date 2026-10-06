@@ -8,7 +8,7 @@ A Pinterest-style portfolio in soft pink. Next.js 16 + Tailwind 4 + Framer Motio
 npm install
 npm run dev
 ```
-Open http://localhost:3000
+Open https://jyotishkaghosh-portfolio.vercel.app/
 
 ## Make it yours
 
