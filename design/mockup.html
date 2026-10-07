@@ -1,0 +1,304 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="node_modules/@fontsource/pixelify-sans/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/pixelify-sans/700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/silkscreen/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/vt323/400.css">
+<style>
+  :root{
+    --sky1:#ffd6e8; --sky2:#f9b4d2; --sky3:#e98bbf;
+    --ink:#3a0d2b; --plum:#5b1846; --hot:#ff4fa3; --rose:#ff8cc6; --blush:#ffe3f0; --cream:#fff6fa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Pixelify Sans',monospace;color:var(--ink);image-rendering:pixelated;overflow:hidden}
+  .px{font-family:'Silkscreen',monospace}
+  .vt{font-family:'VT323',monospace}
+  /* pixel border window */
+  .win{position:absolute;background:var(--cream);
+    box-shadow:0 0 0 4px var(--ink),8px 8px 0 4px rgba(58,13,43,.35);}
+  .win .bar{height:40px;background:linear-gradient(#ff7ab8,#ff4fa3);display:flex;align-items:center;padding:0 12px;gap:10px;
+    border-bottom:4px solid var(--ink);color:#fff;font-weight:700;font-size:20px;text-shadow:2px 2px 0 var(--plum)}
+  .win .bar .btns{margin-left:auto;display:flex;gap:6px}
+  .win .bar .btns span{width:22px;height:22px;background:var(--blush);box-shadow:inset -3px -3px 0 #f2a7c9,0 0 0 3px var(--ink);
+    display:grid;place-items:center;color:var(--ink);font-size:14px;text-shadow:none}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-weight:700;font-size:18px;
+    background:var(--hot);color:#fff;box-shadow:inset -4px -4px 0 #c22a76,inset 4px 4px 0 #ff8cc6,0 0 0 3px var(--ink);text-shadow:2px 2px 0 #a3205f}
+  .btn.alt{background:var(--blush);color:var(--ink);text-shadow:none;box-shadow:inset -4px -4px 0 #f2a7c9,inset 4px 4px 0 #fff,0 0 0 3px var(--ink)}
+  .slot{background:#f7c6dc;box-shadow:inset 4px 4px 0 #d98fb2,inset -4px -4px 0 #ffe9f3}
+  .icon{position:absolute;width:120px;text-align:center}
+  .icon svg{filter:drop-shadow(0 10px 0 rgba(58,13,43,.25))}
+  .icon .lbl{display:inline-block;margin-top:2px;padding:3px 8px;font-size:16px;color:#fff;background:rgba(58,13,43,.72);
+    font-weight:700;letter-spacing:.5px}
+  .icon.sel .lbl{background:var(--hot)}
+  .icon.sel svg{transform:translateY(-8px) rotate(-4deg)}
+  .glow{position:absolute;width:120px;height:120px;border:3px dashed #fff;opacity:.9}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+/* ---------- voxel cube generator ---------- */
+function shade(hex, f){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;
+  r=Math.max(0,Math.min(255,Math.round(r*f)));g=Math.max(0,Math.min(255,Math.round(g*f)));b=Math.max(0,Math.min(255,Math.round(b*f)));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}
+let seed=7;function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647}
+// affine map from unit square (u,v) to parallelogram p0 (top-left), p1 (top-right), p3 (bottom-left)
+function face(p0,p1,p3,N,colorFn){let s='';
+  const ex=[(p1[0]-p0[0])/N,(p1[1]-p0[1])/N], ey=[(p3[0]-p0[0])/N,(p3[1]-p0[1])/N];
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){
+    const a=[p0[0]+ex[0]*i+ey[0]*j,p0[1]+ex[1]*i+ey[1]*j];
+    const pts=[a,[a[0]+ex[0],a[1]+ex[1]],[a[0]+ex[0]+ey[0],a[1]+ex[1]+ey[1]],[a[0]+ey[0],a[1]+ey[1]]];
+    s+=`<polygon points="${pts.map(p=>p.map(v=>v.toFixed(2)).join(',')).join(' ')}" fill="${colorFn(i,j)}" stroke="${colorFn(i,j)}" stroke-width=".6"/>`;}
+  return s}
+// sprites: 8x8, chars map to palette keys
+const SPR={
+ heart:["........",".##..##.","#oo##oo#","#oooooo#","#oooooo#",".#oooo#.","..#oo#..","...##..."],
+ chart:["........","......#.",".....##.","..#..##.",".##.###.",".##.###.",".######.","########"],
+ search:["..####..",".#oooo#.","#oo..oo#","#o....o#","#oo..oo#",".#oooo##","..####.##","......##"],
+ plane:["...##...","...##...","..####..","########","###oo###","...##...","..####..",".##..##."],
+ star:["...##...","...##...","#######.",".#####..","..####..",".##..##.","##....##","........"],
+ trophy:["########","#oooooo#",".#oooo#.","..#oo#..","...##...","...##...","..####..",".######."],
+ scroll:[".######.","#oooooo#",".#.##.#.",".#oooo#.",".#.##.#.",".#oooo#.","#oooooo#",".######."],
+ mail:["........","########","##oooo##","#o#oo#o#","#oo##oo#","#oooooo#","########","........"],
+ brief:["..####..","..#..#..","########","#oooooo#","########","#oo##oo#","#oooooo#","########"],
+ folder:["........","###.....","#oo#####","#oooooo#","########","#oooooo#","#oooooo#","########"],
+ grad:["........","...##...",".######.","########",".######.","..#oo#..","..#oo#.#",".......#"],
+};
+function cube(size,{top,side,mark='#3a0d2b',mark2='#fff6fa',sprite,grass=false}){
+  const w=size,h=size, cx=w/2;
+  const T=[[cx,0],[w,h/4],[cx,h/2],[0,h/4]];
+  const N=8;
+  const tex=(base,f)=>(i,j)=>shade(base,f*(0.9+rnd()*0.2));
+  let s=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`;
+  // top
+  s+=face(T[0],T[1],T[3],N,tex(top,1.06));
+  // left face: p0=(0,h/4) p1=(cx,h/2) p3=(0,3h/4)
+  const L0=[0,h/4],L1=[cx,h/2],L3=[0,3*h/4];
+  const R0=[cx,h/2],R1=[w,h/4],R3=[cx,h];
+  const sp=sprite?SPR[sprite]:null;
+  const leftFn=(i,j)=>{
+    if(grass&&j<2) return shade(top,0.88*(0.9+rnd()*0.2));
+    if(sp&&sp[j]&&sp[j][i]==='#') return mark;
+    if(sp&&sp[j]&&sp[j][i]==='o') return mark2;
+    return shade(side,0.86*(0.9+rnd()*0.2));};
+  s+=face(L0,L1,L3,N,leftFn);
+  s+=face(R0,R1,R3,N,(i,j)=>grass&&j<2?shade(top,0.7*(0.9+rnd()*0.2)):shade(side,0.66*(0.9+rnd()*0.2)));
+  // edges
+  s+=`<polygon points="${[T[0],T[1],[w,3*h/4],[cx,h],[0,3*h/4],T[3]].map(p=>p.join(',')).join(' ')}" fill="none" stroke="#3a0d2b" stroke-width="3" stroke-linejoin="miter"/>`;
+  s+=`<polyline points="${[T[3],T[2],T[1]].map(p=>p.join(',')).join(' ')}" fill="none" stroke="#3a0d2b" stroke-opacity=".35" stroke-width="2"/>`;
+  s+=`<line x1="${cx}" y1="${h/2}" x2="${cx}" y2="${h}" stroke="#3a0d2b" stroke-opacity=".35" stroke-width="2"/>`;
+  return s+'</svg>';}
+
+const PROJECTS=[
+ {k:'about',  label:'about_me',     top:'#ff9fcf',side:'#ff7ab8',sprite:'heart'},
+ {k:'kairo',  label:'Kairo',        top:'#ffd1e6',side:'#e85a9c',sprite:'chart'},
+ {k:'signal', label:'SignalStack',  top:'#f6b7ff',side:'#b65ad6',sprite:'search'},
+ {k:'safar',  label:'Safar',        top:'#ffc7d9',side:'#f0789c',sprite:'plane'},
+ {k:'matilda',label:'Matilda',      top:'#ffe2b8',side:'#f4a3b8',sprite:'star'},
+ {k:'work',   label:'experience',   top:'#ffb3c7',side:'#c94f7c',sprite:'brief'},
+ {k:'wins',   label:'achievements', top:'#ffe58f',side:'#f0a3c2',sprite:'trophy'},
+ {k:'edu',    label:'education',    top:'#e3c7ff',side:'#9b6ad8',sprite:'grad'},
+ {k:'resume', label:'résumé.pdf',   top:'#fff0f6',side:'#f3b0cc',sprite:'scroll'},
+ {k:'mail',   label:'say_hi',       top:'#ff8cc6',side:'#ff4fa3',sprite:'mail'},
+];
+const BLOCKS=PROJECTS;
+const P=k=>PROJECTS.find(b=>b.k===k);
+const FOLDER={k:'projects',label:'projects/',top:'#ffe58f',side:'#ff8cc6',sprite:'folder'};
+const DESK=[P('about'),FOLDER,P('work'),P('wins'),P('edu'),P('resume'),P('mail')];
+const PROJ=[
+ {...P('kairo'),file:'Kairo.exe',kind:'AI CRM & sales intelligence',url:'kairo-five-nu.vercel.app',date:'Sep 2026'},
+ {...P('signal'),file:'SignalStack.exe',kind:'Job discovery & application tracker',url:'signalstack-theta.vercel.app',date:'Sep 2026'},
+ {...P('safar'),file:'Safar.exe',kind:'AI travel planner',url:'safar-beta.vercel.app',date:'2025'},
+ {...P('matilda'),file:'Matilda.exe',kind:'Learning for neurodiverse kids',url:'neurodiverse-app.vercel.app',date:'2025'},
+];
+
+/* ---------- pieces ---------- */
+function sky(W,H){
+  let s=`<div style="position:absolute;inset:0;background:linear-gradient(#ffe3f0 0%,#ffc4df 45%,#f7a3cb 100%)"></div>`;
+  // pixel sun
+  s+=`<div style="position:absolute;right:${W*0.2}px;top:70px;width:96px;height:96px;background:#fff3c4;box-shadow:0 0 0 12px rgba(255,243,196,.45),0 0 0 28px rgba(255,243,196,.2)"></div>`;
+  // blocky clouds
+  const clouds=[[80,60,1],[W*0.42,110,.8],[W*0.68,40,1.1],[W*0.86,170,.7],[W*0.25,190,.6]];
+  clouds.forEach(([x,y,sc])=>{const u=16*sc;
+    s+=`<div style="position:absolute;left:${x}px;top:${y}px">
+      <div style="position:absolute;left:${u*2}px;top:0;width:${u*5}px;height:${u*2}px;background:#fff"></div>
+      <div style="position:absolute;left:0;top:${u*2}px;width:${u*10}px;height:${u*2}px;background:#fff"></div>
+      <div style="position:absolute;left:${u}px;top:${u*4}px;width:${u*8}px;height:${u}px;background:#ffe8f2"></div></div>`});
+  return s;}
+function land(W,H,base){
+  let s='';const B=32;
+  // hills of blocks
+  for(let x=0;x<W;x+=B){
+    const hgt=Math.round(3+2*Math.sin(x/170)+1.5*Math.sin(x/61)+ (x%7));
+    const n=Math.max(2,Math.min(7,hgt));
+    for(let k=0;k<n;k++){
+      const y=base-(k+1)*B;
+      const isTop=k===n-1;
+      const c=isTop?shade('#ff9fcf',0.92+((x/B+k)%3)*0.05):shade(k<2?'#b8638f':'#d97aa9',0.9+((x/B*3+k)%4)*0.04);
+      s+=`<div style="position:absolute;left:${x}px;top:${y}px;width:${B}px;height:${B}px;background:${c};box-shadow:inset -3px -3px 0 rgba(58,13,43,.18),inset 3px 3px 0 rgba(255,255,255,.18)"></div>`;
+    }
+    if(isTree(x)){ // cherry blossom tree
+      const top=base-(n)*B;
+      for(let k=1;k<=3;k++) s+=`<div style="position:absolute;left:${x}px;top:${top-k*B}px;width:${B}px;height:${B}px;background:#7a3b55;box-shadow:inset -3px 0 0 #5c2a40"></div>`;
+      for(let dx=-2;dx<=2;dx++)for(let dy=0;dy<3;dy++){ if(Math.abs(dx)===2&&dy!==1)continue;
+        s+=`<div style="position:absolute;left:${x+dx*B}px;top:${top-(4+dy)*B}px;width:${B}px;height:${B}px;background:${['#ffb6d9','#ff9fcf','#ffd1e6'][(dx+dy+5)%3]};box-shadow:inset -3px -3px 0 rgba(200,60,120,.25)"></div>`}
+    }
+  }
+  s+=`<div style="position:absolute;left:0;top:${base}px;width:${W}px;height:${H-base}px;background:#a24f7a"></div>`;
+  return s;}
+function isTree(x){return [224,736,1184].includes(x)||[96,320].includes(x)&&false}
+function hotbar(W,y,scale=1){
+  const slots=[...DESK.slice(0,2),...PROJ,...DESK.slice(5,7),DESK[2]].slice(0,9);const sz=56*scale;
+  let s=`<div style="position:absolute;left:${(W-(sz+6)*9-110)/2}px;top:${y}px;display:flex;align-items:center;gap:10px">`;
+  s+=`<div class="btn" style="height:${sz}px;font-size:22px;padding:0 16px">JG ✦</div><div style="display:flex;gap:6px;padding:6px;background:rgba(58,13,43,.75);box-shadow:0 0 0 3px var(--ink)">`;
+  slots.forEach((b,i)=>{s+=`<div class="slot" style="width:${sz}px;height:${sz}px;display:grid;place-items:center;${i===1?'box-shadow:0 0 0 4px #fff, inset 4px 4px 0 #d98fb2':''}">${cube(sz*0.7,b)}</div>`});
+  s+=`</div></div>`;return s;}
+
+const W=innerWidth,H=innerHeight;
+const view=new URLSearchParams(location.search).get('v')||'desk';
+const root=document.getElementById('root');
+root.style.cssText=`position:relative;width:${W}px;height:${H}px`;
+let html='';
+
+if(view==='desk'||view==='kairo'||view==='folder'){
+  html+=sky(W,H);
+  html+=land(W,H,H-96);
+  // taskbar
+  html+=`<div style="position:absolute;left:0;right:0;bottom:0;height:96px;background:linear-gradient(#5b1846,#3a0d2b);border-top:4px solid #ff8cc6"></div>`;
+  html+=hotbar(W,H-80);
+  html+=`<div class="px" style="position:absolute;right:28px;bottom:30px;color:#ffe3f0;font-size:18px;text-align:right">04:35<br><span style="font-size:12px;opacity:.7">KOLKATA · IN</span></div>`;
+  html+=`<div class="px" style="position:absolute;left:28px;bottom:30px;color:#ffe3f0;font-size:13px;line-height:1.5">☀ / ☾ theme<br><span style="opacity:.7">🔊 sfx on</span></div>`;
+  // desktop icons in two columns
+  DESK.forEach((b,i)=>{const col=i%2,row=Math.floor(i/2);
+    const x=36+col*132,y=32+row*150;
+    html+=`<div class="icon ${(view==='desk'||view==='folder')&&b.k==='projects'?'sel':''}" style="left:${x}px;top:${y}px">${cube(92,b)}<br><span class="lbl">${b.label}</span></div>`});
+}
+
+if(view==='desk'){
+  // welcome window
+  html+=`<div class="win" style="left:${W*0.33}px;top:120px;width:620px">
+    <div class="bar">✦ jyotishka.exe <div class="btns"><span>_</span><span>□</span><span>×</span></div></div>
+    <div style="padding:28px 30px 30px;display:flex;gap:26px;align-items:flex-start">
+      <div style="flex-shrink:0;width:132px;height:132px;display:grid;place-items:center;background:#ffd1e6;box-shadow:inset 6px 6px 0 #ffeaf4,inset -6px -6px 0 #f29cc4,0 0 0 4px var(--ink)">
+        <div style="font-size:60px;font-weight:700;color:#ff4fa3;text-shadow:4px 4px 0 #3a0d2b">JG</div></div>
+      <div>
+        <div class="px" style="font-size:13px;color:#c22a76;letter-spacing:1px">PLAYER 1 · LVL 21 · KOLKATA</div>
+        <div style="font-size:42px;font-weight:700;line-height:1.05;margin-top:6px">Jyotishka Ghosh</div>
+        <div style="display:inline-block;margin-top:8px;padding:4px 10px;background:#3a0d2b;color:#ffd1e6;font-size:20px;font-weight:700">GTM Engineer</div>
+        <p class="vt" style="font-size:24px;line-height:1.05;margin-top:14px;color:#5b1846">I build the pipelines, automations and ML models behind go-to-market — and I've closed the deals myself.</p>
+      </div>
+    </div>
+    <div style="padding:0 30px 26px;display:flex;gap:14px;flex-wrap:wrap">
+      <span class="btn">▶ start exploring</span><span class="btn alt">résumé.pdf</span><span class="btn alt">linkedin</span><span class="btn alt">github</span>
+    </div>
+    <div style="border-top:4px solid var(--ink);padding:14px 30px;display:flex;gap:18px;background:#ffe3f0" class="px">
+      <span style="font-size:13px">❤❤❤❤❤ <b>5</b> internships</span><span style="font-size:13px">◆ <b>4</b> live products</span><span style="font-size:13px">★ <b>₹35L</b> acv closed</span>
+    </div>
+  </div>`;
+  // achievement toast
+  html+=`<div style="position:absolute;right:36px;top:32px;width:380px;display:flex;gap:14px;align-items:center;padding:14px 16px;background:#3a0d2b;color:#fff;box-shadow:0 0 0 4px #ff8cc6,8px 8px 0 4px rgba(58,13,43,.35)">
+    <div class="slot" style="width:60px;height:60px;display:grid;place-items:center;flex-shrink:0">${cube(44,BLOCKS[6])}</div>
+    <div><div style="color:#ffe58f;font-weight:700;font-size:18px">Achievement unlocked!</div><div class="vt" style="font-size:24px;line-height:1">₹35L enterprise ACV closed</div></div></div>`;
+  // hint
+  html+=`<div class="px" style="position:absolute;left:${W*0.33}px;top:${120+470}px;color:#3a0d2b;font-size:13px;background:rgba(255,246,250,.85);padding:8px 12px;box-shadow:0 0 0 3px #3a0d2b">↖ double-click a block to open it · drag it to spin in 3D</div>`;
+  // cursor
+  html+=`<svg style="position:absolute;left:236px;top:210px" width="34" height="40" viewBox="0 0 17 20"><path d="M0 0h2v2h2v2h2v2h2v2h2v2h2v2h2v2H9v2h2v2h2v2h-2v2H9v-2H7v-2H5v2H3v2H0z" fill="#fff" stroke="#3a0d2b" stroke-width="1.2"/></svg>`;
+}
+
+
+if(view==='folder'){
+  html+=`<div style="position:absolute;inset:0 0 96px 0;background:rgba(58,13,43,.28)"></div>`;
+  html+=`<div class="win" style="left:${W*0.24}px;top:70px;width:${W*0.62}px">
+    <div class="bar">${cube(26,FOLDER)} projects/ <div class="btns"><span>_</span><span>□</span><span>×</span></div></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:4px solid var(--ink);background:#ffe3f0">
+      <span class="btn alt" style="padding:4px 10px;font-size:14px">◀</span><span class="btn alt" style="padding:4px 10px;font-size:14px">▶</span>
+      <div class="slot px" style="flex:1;padding:8px 12px;font-size:12px">C:\\jyotishka\\desktop\\projects</div>
+      <div class="slot px" style="width:200px;padding:8px 12px;font-size:12px;opacity:.7">⌕ search files</div></div>
+    <div style="display:grid;grid-template-columns:170px 1fr">
+      <div style="border-right:4px solid var(--ink);padding:16px 12px;background:#fff0f6" class="px">
+        <div style="font-size:11px;color:#c22a76;margin-bottom:10px">QUICK ACCESS</div>
+        ${[['★','all projects',1],['◆','AI / ML',0],['▤','data pipelines',0],['✦','web apps',0]].map(([i,t,a])=>`<div style="font-size:12px;padding:8px;margin-bottom:4px;${a?'background:#ff4fa3;color:#fff':''}">${i} ${t}</div>`).join('')}
+        <div style="font-size:11px;color:#c22a76;margin:18px 0 10px">STORAGE</div>
+        <div class="slot" style="height:16px"><div style="width:72%;height:100%;background:#ff4fa3"></div></div>
+        <div style="font-size:10px;margin-top:6px">4 projects · all live</div>
+      </div>
+      <div style="padding:24px 26px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+          ${PROJ.map((p,i)=>`<div style="text-align:center;padding:16px 8px 12px;${i===0?'background:#ffd1e6;box-shadow:0 0 0 3px var(--ink)':''}">
+            <div style="${i===0?'transform:translateY(-6px) rotate(-5deg)':''}">${cube(104,p)}</div>
+            <div style="font-weight:700;font-size:18px;margin-top:6px">${p.file}</div>
+            <div class="vt" style="font-size:18px;line-height:1;color:#5b1846;margin-top:2px">${p.kind}</div>
+            <div class="px" style="font-size:9px;margin-top:8px;display:inline-block;padding:3px 6px;background:#3a0d2b;color:#9dffb5">● LIVE</div></div>`).join('')}
+        </div>
+        <div style="margin-top:22px;border-top:4px solid var(--ink)"></div>
+        <div class="px" style="display:grid;grid-template-columns:1.3fr 1.6fr 1.6fr .8fr;font-size:11px;padding:10px 6px;color:#c22a76"><span>NAME</span><span>TYPE</span><span>LIVE AT</span><span>DATE</span></div>
+        ${PROJ.map((p,i)=>`<div style="display:grid;grid-template-columns:1.3fr 1.6fr 1.6fr .8fr;align-items:center;padding:6px;font-size:16px;${i===0?'background:#ffd1e6':''}">
+          <span style="display:flex;align-items:center;gap:8px;font-weight:700">${cube(24,p)}${p.file}</span><span class="vt" style="font-size:19px">${p.kind}</span><span class="vt" style="font-size:19px;color:#c22a76">${p.url}</span><span class="vt" style="font-size:19px">${p.date}</span></div>`).join('')}
+      </div>
+    </div>
+    <div class="px" style="border-top:4px solid var(--ink);padding:10px 16px;font-size:11px;background:#ffe3f0;display:flex;justify-content:space-between"><span>4 items · 1 selected</span><span>double-click a file to open it ↗</span></div>
+  </div>`;
+  html+=`<svg style="position:absolute;left:${W*0.24+170+26+110}px;top:250px" width="34" height="40" viewBox="0 0 17 20"><path d="M0 0h2v2h2v2h2v2h2v2h2v2h2v2h2v2H9v2h2v2h2v2h-2v2H9v-2H7v-2H5v2H3v2H0z" fill="#fff" stroke="#3a0d2b" stroke-width="1.2"/></svg>`;
+}
+
+if(view==='kairo'){
+  html+=`<div style="position:absolute;inset:0 0 96px 0;background:rgba(58,13,43,.35)"></div>`;
+  html+=`<div class="win" style="left:${W*0.22}px;top:46px;width:${W*0.68}px">
+    <div class="bar">${cube(26,P('kairo'))} projects / Kairo.exe — AI CRM & sales intelligence <div class="btns"><span>_</span><span>□</span><span>×</span></div></div>
+    <div style="display:grid;grid-template-columns:330px 1fr;">
+      <div style="background:linear-gradient(#ffe3f0,#ffc4df);border-right:4px solid var(--ink);padding:24px;display:flex;flex-direction:column;align-items:center">
+        <div style="transform:rotate(-8deg)">${cube(210,{...BLOCKS[1]})}</div>
+        <div class="px" style="font-size:11px;margin-top:6px;opacity:.7">⟲ drag to rotate</div>
+        <div class="slot" style="margin-top:18px;width:100%;padding:16px;text-align:center">
+          <div style="font-size:54px;font-weight:700;color:#ff4fa3;text-shadow:3px 3px 0 #3a0d2b;line-height:1">96%</div>
+          <div class="vt" style="font-size:20px;line-height:1;margin-top:6px">of deals scored 90%+ won<br>195-deal backtest · simulated data</div>
+        </div>
+      </div>
+      <div style="padding:24px 28px">
+        <div style="box-shadow:0 0 0 4px var(--ink);background:#fff;height:210px;position:relative;overflow:hidden">
+          <div style="height:26px;background:#f3e6ee;border-bottom:3px solid var(--ink);display:flex;gap:6px;align-items:center;padding:0 8px"><i style="width:10px;height:10px;background:#ff4fa3"></i><i style="width:10px;height:10px;background:#ffd1e6"></i><span class="px" style="font-size:10px;margin-left:8px;opacity:.6">kairo-five-nu.vercel.app</span></div>
+          <div style="padding:14px 16px;font-family:system-ui;font-size:15px;font-weight:700">What will we sell, which deals need attention, and why?</div>
+          <div style="padding:0 16px;display:flex;gap:10px">${['$2.29M','$1.8M','71%','$2.4M'].map(v=>`<div style="flex:1;border:2px solid #eee;padding:10px;font-family:system-ui;font-weight:700;font-size:18px">${v}<div style="font-size:10px;font-weight:400;opacity:.6">metric</div></div>`).join('')}</div>
+          <div style="margin:12px 16px;height:46px;background:repeating-linear-gradient(90deg,#ffd1e6 0 18px,#fff 18px 22px)"></div>
+          <div class="px" style="position:absolute;right:10px;bottom:10px;background:#3a0d2b;color:#fff;font-size:11px;padding:4px 8px">live preview</div>
+        </div>
+        <p class="vt" style="font-size:24px;line-height:1.05;margin-top:18px;color:#5b1846">I spent months closing deals by gut feel. Kairo turns raw CRM data into who to call, what to say, and what will close.</p>
+        <div class="px" style="font-size:12px;margin-top:16px;color:#c22a76">INVENTORY · STACK</div>
+        <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:8px">
+          ${['Python','SQL','DuckDB','Parquet','MLflow','Gemini','Actions','Vercel'].map((t,i)=>`<div class="slot" style="height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">${cube(30,BLOCKS[i%BLOCKS.length])}<span class="px" style="font-size:9px">${t}</span></div>`).join('')}
+        </div>
+        <div class="px" style="font-size:12px;margin-top:16px;color:#c22a76">QUESTS COMPLETED</div>
+        <div class="vt" style="font-size:21px;line-height:1.15;margin-top:4px">
+          ✔ 18 months of B2B SaaS sales simulated in DuckDB<br>✔ caught & removed a target-leakage feature<br>✔ Gemini deal briefings grounded in model output</div>
+        <div style="display:flex;gap:14px;margin-top:18px"><span class="btn">▶ open live site</span><span class="btn alt">◀ back to projects/</span></div>
+      </div>
+    </div></div>`;
+}
+
+if(view==='phone'){
+  html+=sky(W,H);
+  html+=land(W,H,H-70);
+  html+=`<div style="position:absolute;inset:0;background:linear-gradient(rgba(255,227,240,0) 60%,rgba(58,13,43,.2))"></div>`;
+  html+=`<div class="px" style="position:absolute;left:0;right:0;top:0;height:38px;display:flex;justify-content:space-between;align-items:center;padding:0 22px;font-size:13px;color:#3a0d2b">04:35<span>▮▮▮ ▰</span></div>`;
+  html+=`<div class="win" style="left:18px;right:18px;top:54px;width:auto">
+    <div class="bar" style="height:34px;font-size:16px">✦ jyotishka.exe<div class="btns"><span style="width:18px;height:18px">×</span></div></div>
+    <div style="padding:14px 16px;display:flex;gap:14px;align-items:center">
+      <div style="width:70px;height:70px;flex-shrink:0;display:grid;place-items:center;background:#ffd1e6;box-shadow:inset 4px 4px 0 #ffeaf4,inset -4px -4px 0 #f29cc4,0 0 0 3px var(--ink)"><b style="font-size:32px;color:#ff4fa3;text-shadow:3px 3px 0 #3a0d2b">JG</b></div>
+      <div><div style="font-size:24px;font-weight:700;line-height:1">Jyotishka Ghosh</div>
+      <div style="display:inline-block;margin-top:6px;padding:2px 8px;background:#3a0d2b;color:#ffd1e6;font-size:15px;font-weight:700">GTM Engineer</div></div></div>
+    <p class="vt" style="font-size:19px;line-height:1;padding:0 16px 14px;color:#5b1846">Pipelines, automations & ML behind go-to-market — and the deals closed myself.</p></div>`;
+  const grid=DESK;
+  grid.forEach((b,i)=>{const col=i%3,row=Math.floor(i/3);
+    html+=`<div class="icon" style="width:110px;left:${18+col*((W-36)/3)+((W-36)/3-110)/2}px;top:${276+row*126}px">${cube(76,b)}<br><span class="lbl" style="font-size:13px">${b.label}</span></div>`});
+  html+=`<div style="position:absolute;left:18px;right:18px;bottom:18px;display:flex;gap:6px;padding:6px;background:rgba(58,13,43,.8);box-shadow:0 0 0 3px var(--ink);justify-content:space-between">
+    ${[DESK[0],FOLDER,P('resume'),P('mail')].map((b,i)=>`<div class="slot" style="flex:1;height:58px;display:grid;place-items:center;${i===1?'box-shadow:0 0 0 3px #fff,inset 4px 4px 0 #d98fb2':''}">${cube(40,b)}</div>`).join('')}</div>`;
+  html+=`<div style="position:absolute;left:18px;right:18px;top:${276+3*126-4}px;display:flex;gap:10px;align-items:center;padding:10px 12px;background:#3a0d2b;color:#fff;box-shadow:0 0 0 3px #ff8cc6">
+    <div class="slot" style="width:44px;height:44px;display:grid;place-items:center;flex-shrink:0">${cube(32,BLOCKS[6])}</div>
+    <div><div style="color:#ffe58f;font-weight:700;font-size:14px">Achievement unlocked!</div><div class="vt" style="font-size:19px;line-height:1">₹35L enterprise ACV closed</div></div></div>`;
+}
+root.innerHTML=html;
+</script>
+</body>
+</html>

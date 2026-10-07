@@ -1,19 +1,26 @@
-import type { Metadata } from "next";
-import "@fontsource-variable/bodoni-moda/opsz.css";
-import "@fontsource-variable/bodoni-moda/opsz-italic.css";
-import "@fontsource/pinyon-script/400.css";
-import "@fontsource-variable/dm-sans";
+import type { Metadata, Viewport } from "next";
+import "@fontsource/pixelify-sans/400.css";
+import "@fontsource/pixelify-sans/700.css";
+import "@fontsource/silkscreen/400.css";
+import "@fontsource/vt323/400.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Jyotishka Ghosh — GTM Engineer",
   description:
-    "Jyotishka Ghosh is a GTM engineer who builds the data pipelines, automations and ML models behind go-to-market — and has closed ₹35L in enterprise ACV herself.",
+    "Jyotishka Ghosh is a GTM engineer who builds the pipelines, automations and ML models behind go-to-market — and has closed ₹35L in enterprise ACV herself. Explore her pink voxel desktop.",
   openGraph: {
     title: "Jyotishka Ghosh — GTM Engineer",
-    description: "Data pipelines, automations and ML models for go-to-market — built by someone who has closed the deals too.",
+    description: "Pipelines, automations and ML models behind go-to-market — built by someone who has closed the deals too.",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffe3f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#1d0618" },
+  ],
 };
 
 // runs before first paint: saved choice wins, otherwise follow the visitor's system theme
@@ -21,7 +28,7 @@ const themeScript = `(function(){var t;try{t=localStorage.getItem("theme")}catch
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="antialiased" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

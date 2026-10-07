@@ -3,92 +3,246 @@
 export const me = {
   first: "Jyotishka",
   last: "Ghosh",
+  name: "Jyotishka Ghosh",
+  monogram: "JG",
   headline: "GTM Engineer",
-  intro:
+  player: "PLAYER 1 · KOLKATA",
+  intro: "I build the pipelines, automations and ML models behind go-to-market — and I've closed the deals myself.",
+  // shorter line for the phone intro card
+  introShort: "Pipelines, automations & ML behind go-to-market — and the deals closed myself.",
+  longIntro:
     "I'm a GTM engineer: I build the data pipelines, automations and ML models that tell revenue teams who to call, what to say and what will close. I've also run the deals myself — closing ₹35L in enterprise ACV at Anything.ai, first touch to signature.",
+  statement: "Most engineers have never sold. Most sellers have never shipped. I've done both.",
+  quote: "I build software for the person I used to be.",
   email: "jyotishkaghosh8@gmail.com",
   github: "https://github.com/JyotishkaGhosh",
+  githubLabel: "github.com/JyotishkaGhosh",
   linkedin: "https://www.linkedin.com/in/jyotishka-ghosh-5470b228a/",
+  linkedinLabel: "linkedin.com/in/jyotishka-ghosh",
   resume: "/Jyotishka_Ghosh_Resume.pdf",
   location: "Kolkata, India",
-  // the bold line under the intro
-  highlights: ["5 internships", "4 live products"],
 };
 
-export const stats: { value: number; prefix?: string; suffix: string; label: string; decimals?: number }[] = [
-  { value: 96, suffix: "%", label: "of deals scored 90%+ won — 195-deal backtest on simulated data" },
-  { value: 87.5, suffix: "%", label: "pipeline-to-close conversion", decimals: 1 },
-  { value: 35, prefix: "₹", suffix: "L", label: "enterprise ACV closed in 8 months" },
+// footer of the jyotishka.exe window — no CGPA here
+export const welcomeStats = [
+  { icon: "♥♥♥♥♥", value: "5", label: "internships" },
+  { icon: "◆", value: "4", label: "live products" },
+  { icon: "★", value: "₹35L", label: "ACV closed" },
+];
+
+export const toast = { title: "Achievement unlocked!", text: "₹35L enterprise ACV closed" };
+
+// every desktop "app": its label under the block and its window title
+export type AppId = "welcome" | "about" | "projects" | "experience" | "achievements" | "education" | "resume" | "sayhi";
+
+export const apps: Record<AppId, { label: string; title: string }> = {
+  welcome: { label: "jyotishka.exe", title: "jyotishka.exe" },
+  about: { label: "about_me", title: "about_me" },
+  projects: { label: "projects/", title: "projects/" },
+  experience: { label: "experience", title: "experience — save files" },
+  achievements: { label: "achievements", title: "achievements" },
+  education: { label: "education", title: "education" },
+  resume: { label: "résumé.pdf", title: "résumé.pdf" },
+  sayhi: { label: "say_hi", title: "say_hi" },
+};
+
+// order of the blocks on the desktop, the phone grid, the phone dock and the hotbar
+export const desktopIcons: AppId[] = ["about", "projects", "experience", "achievements", "education", "resume", "sayhi"];
+export const phoneDock: AppId[] = ["about", "projects", "resume", "sayhi"];
+
+// small bits of interface text
+export const ui = {
+  hint: "↖ double-click a block to open it · drag it to spin in 3D",
+  phoneHint: "tap a block to open it",
+  startLabel: "JG ✦",
+  startMenuTitle: "jyotishka os",
+  startMenu: { about: "about me", projects: "projects", resume: "résumé", contact: "contact", theme: "theme" },
+  themeDay: "pink day",
+  themeNight: "plum night",
+  themeLabel: "theme",
+  sfxOn: "sfx on",
+  sfxOff: "sfx off",
+  clockPlace: "KOLKATA · IN",
+  hotbarLabel: "hotbar",
+  desktopLabel: "desktop",
+  dismiss: "dismiss",
+  emptySlot: "empty slot",
+  win: { minimise: "minimise", maximise: "maximise", restore: "restore", close: "close", back: "back to desktop" },
+  welcome: {
+    explore: "▶ start exploring",
+    resume: "résumé.pdf",
+    linkedin: "linkedin",
+    github: "github",
+  },
+  about: {
+    tagline: "sales brain + engineer hands",
+    lootTitle: "INVENTORY · TOOLKIT",
+    factsTitle: "PLAYER STATS",
+  },
+  experience: {
+    intro: "Every job is a save file. Click one to load it.",
+    latest: "★ latest save",
+    save: "SAVE",
+  },
+  achievements: { unlocked: "UNLOCKED", progress: "unlocked" },
+  education: { scoreLabel: "CGPA", status: "in progress" },
+  sayhi: {
+    intro: "Want to talk GTM, pipelines or a deal? My inbox is open.",
+    email: "email",
+    copy: "copy",
+    copied: "copied ✓",
+    write: "✉ write to me",
+    linkedin: "linkedin",
+    github: "github",
+  },
+  folder: {
+    path: "C:\\jyotishka\\desktop\\projects",
+    pathLabel: "folder path",
+    search: "search files",
+    quickAccess: "QUICK ACCESS",
+    storage: "STORAGE",
+    storageNote: "4 projects · all live",
+    items: "items",
+    item: "item",
+    selected: "selected",
+    openHint: "double-click a file to open it ↗",
+    openHintTouch: "tap a file to open it ↗",
+    empty: "no files match that search",
+    live: "● LIVE",
+    cols: { name: "NAME", type: "TYPE", live: "LIVE AT", date: "DATE" },
+    back: "back",
+    forward: "forward",
+    viewIcons: "▦ icons",
+    viewList: "☰ details",
+  },
+  project: {
+    drag: "⟲ drag to rotate",
+    stack: "INVENTORY · STACK",
+    quests: "QUESTS COMPLETED",
+    live: "▶ open live site",
+    source: "</> source",
+    back: "◀ back to projects/",
+    shot: "snapshot",
+    shotAlt: "Screenshot of",
+    blockLabel: "as a 3D block — drag to spin it",
+    titlePrefix: "projects / ",
+  },
+  companions: {
+    hi: "hi!",
+    kitty: "✦",
+    label: "Jyotishka and her kitty, two little blocky friends in the corner",
+  },
+  tree: { label: "A cherry-blossom block tree on the grass, dropping petals" },
+  footer: { made: "Made by Jyotishka Ghosh", rights: "© 2026 All rights reserved" },
+};
+
+// sidebar quick filters in projects/
+export type Category = "all" | "ai" | "data" | "web";
+export const categories: { id: Category; icon: string; label: string; slug: string }[] = [
+  { id: "all", icon: "★", label: "all projects", slug: "" },
+  { id: "ai", icon: "◆", label: "AI / ML", slug: "ai-ml" },
+  { id: "data", icon: "▤", label: "data pipelines", slug: "data-pipelines" },
+  { id: "web", icon: "✦", label: "web apps", slug: "web-apps" },
 ];
 
 export type Project = {
+  slug: "kairo" | "signalstack" | "safar" | "matilda";
   name: string;
-  kicker: string;
+  file: string;
+  kind: string;
+  tags: Exclude<Category, "all">[];
+  date: string;
   blurb: string;
-  points: string[];
+  quests: string[];
   stack: string[];
-  live?: string;
+  live: string;
+  liveLabel: string;
   code?: string;
-  // ✦ optional screenshot, e.g. "/pins/kairo.png" (put the file in public/pins)
-  image?: string;
+  image: string;
   metric?: { value: string; label: string };
 };
 
-export const featured: Project[] = [
+export const projects: Project[] = [
   {
+    slug: "kairo",
     name: "Kairo",
-    kicker: "AI-powered CRM & sales intelligence",
+    file: "Kairo.exe",
+    kind: "AI CRM & sales intelligence",
+    tags: ["ai", "data"],
+    date: "Sep 2026",
     blurb:
       "I spent months closing deals by gut feel. Kairo is the tool I wished I had — it turns CRM data into who to call, what to say, and what will close. It runs on a realistic simulation of 18 months of B2B SaaS sales, not a real company's pipeline.",
-    points: [
-      "Built a realistic simulation of 18 months of B2B SaaS sales — reps, accounts, leads, deals, stage history — modelled in DuckDB with daily point-in-time snapshots so nothing leaks from the future.",
-      "Trained lead-scoring and win-probability models tracked in MLflow; caught and removed a target-leakage feature (the rep's own forecast).",
-      "Gemini-written deal briefings grounded only in model outputs, flagging close-date slippage and rep-vs-model gaps.",
-      "Explainable next-best-actions and a backtested pipeline forecast, refreshed daily by GitHub Actions.",
+    quests: [
+      "18 months of B2B SaaS sales simulated in DuckDB, with point-in-time snapshots",
+      "lead-scoring & win-probability models tracked in MLflow",
+      "caught & removed a target-leakage feature (the rep's own forecast)",
+      "Gemini deal briefings grounded only in model output",
+      "backtested forecast, refreshed daily by GitHub Actions",
     ],
-    stack: ["Python", "SQL", "DuckDB", "Parquet", "MLflow", "Gemini API", "GitHub Actions", "Vercel"],
+    stack: ["Python", "SQL", "DuckDB", "Parquet", "MLflow", "Gemini", "Actions", "Vercel"],
     live: "https://kairo-five-nu.vercel.app/",
+    liveLabel: "kairo-five-nu.vercel.app",
     image: "/pins/kairo.png",
     metric: { value: "96%", label: "of deals scored 90%+ won — 195-deal backtest on simulated data" },
   },
   {
+    slug: "signalstack",
     name: "SignalStack",
-    kicker: "Job discovery & application tracking",
+    file: "SignalStack.exe",
+    kind: "Job discovery & application tracker",
+    tags: ["data", "web"],
+    date: "Sep 2026",
     blurb:
       "A data pipeline wearing a product's clothes — it pulls job postings from many sources, cleans them into one schema, and lets you track every application to the offer.",
-    points: [
-      "End-to-end pipeline that ingests, cleans, deduplicates and normalises postings into a unified schema.",
-      "Scheduled ETL with incremental loads and idempotent upserts, so every rerun is safe.",
-      "Relational model of jobs, companies and applications — saved → applied → interview → offer.",
-      "Search and filters over role, location, seniority and recency, with Supabase auth and row-level security.",
+    quests: [
+      "ingests, cleans, dedupes & normalises postings into one schema",
+      "scheduled ETL with incremental loads and idempotent upserts",
+      "jobs, companies & applications tracked saved → applied → interview → offer",
+      "search & filters with Supabase auth and row-level security",
     ],
-    stack: ["Python", "SQL", "DuckDB", "Parquet", "Supabase", "Postgres", "GitHub Actions", "Vercel"],
+    stack: ["Python", "SQL", "DuckDB", "Parquet", "Supabase", "Postgres", "Actions", "Vercel"],
     live: "https://signalstack-theta.vercel.app/",
-    image: "/pins/signalstack.png",
+    liveLabel: "signalstack-theta.vercel.app",
     code: "https://github.com/JyotishkaGhosh/signalstack",
+    image: "/pins/signalstack.png",
     metric: { value: "4", label: "stages tracked, saved → offer · reruns are idempotent" },
   },
-];
-
-export const more: Project[] = [
   {
+    slug: "safar",
     name: "Safar",
-    kicker: "AI travel planner",
+    file: "Safar.exe",
+    kind: "AI travel planner",
+    tags: ["ai", "web"],
+    date: "2025",
     blurb:
       "Itineraries that find hidden gems and local food, not tourist lists — grounded in live maps, weather and a real budget.",
-    points: [],
-    stack: ["MERN", "Tailwind", "Google Maps", "OpenWeather"],
+    quests: [
+      "itineraries built around hidden gems and local food",
+      "grounded in live Google Maps and OpenWeather data",
+      "plans that fit a real budget",
+    ],
+    stack: ["MERN", "Tailwind", "Maps", "Weather"],
     live: "https://safar-beta.vercel.app/",
+    liveLabel: "safar-beta.vercel.app",
     image: "/pins/safar.png",
   },
   {
+    slug: "matilda",
     name: "Matilda",
-    kicker: "Learning for neurodiverse kids",
+    file: "Matilda.exe",
+    kind: "Learning for neurodiverse kids",
+    tags: ["ai", "web"],
+    date: "2025",
     blurb:
       "Adaptive, picture-based lessons that read a child's engagement through emotion recognition and adjust in real time.",
-    points: [],
+    quests: [
+      "adaptive, picture-based lessons",
+      "reads engagement with emotion recognition (OpenCV)",
+      "adjusts the lesson in real time",
+    ],
     stack: ["Next.js", "FastAPI", "OpenCV", "Python"],
     live: "https://neurodiverse-app.vercel.app/",
+    liveLabel: "neurodiverse-app.vercel.app",
     image: "/pins/matilda.png",
   },
 ];
@@ -101,6 +255,7 @@ export type Job = {
   where: string;
   headline: string;
   points: string[];
+  stats?: { value: string; label: string }[];
   big?: boolean;
 };
 
@@ -112,6 +267,12 @@ export const jobs: Job[] = [
     where: "Remote",
     big: true,
     headline: "The founders' GTM execution layer — I owned every deal from first touch to onboarding.",
+    stats: [
+      { value: "₹35L", label: "enterprise ACV" },
+      { value: "15", label: "deals closed" },
+      { value: "87.5%", label: "pipeline → close" },
+      { value: "40%", label: "reply rate" },
+    ],
     points: [
       "Closed 15 enterprise deals worth ₹35L ACV from ₹40L of pipeline — ~87.5% conversion, 15–18 day cycles.",
       "Ran 10,000+ touches across LinkedIn, email and calls at a 40% reply rate, ~6 meetings booked a week.",
@@ -163,30 +324,28 @@ export const toolkit = [
   { group: "GTM", items: ["Apollo.io", "Clay", "n8n", "Airtable", "CRM"] },
 ];
 
-export const education = {
-  degree: "B.Tech, Computer Science & Engineering",
-  school: "RCC Institute of Information Technology, MAKAUT",
-  when: "2023 – 2027",
-  score: "9.2",
-};
-
-export const receipts = [
-  "Top teams — Smart India Hackathon 2023 & 2024",
-  "7th — Smart Bengal Hackathon",
-  "3rd — INNOVISION Extempore",
-  "Contributor — GirlScript Summer of Code",
-  "Departmental topper — VECC visit",
-  "McKinsey Forward Program",
-];
-
-// ✦ little mood pins scattered across the board
-export const quotes = [
-  { text: "I build software for the person I used to be.", tone: "cream" },
-  { text: "Most engineers have never sold. Most sellers have never shipped. I've done both.", tone: "wine" },
-];
-
 export const aboutMe = [
   "Based in Kolkata, building for everywhere",
   "Sales brain, engineer hands",
   "Happiest when a pipeline runs clean — the data kind and the deal kind",
+];
+
+export const education = {
+  degree: "B.Tech, Computer Science & Engineering",
+  school: "RCC Institute of Information Technology",
+  university: "MAKAUT",
+  when: "2023 – 2027",
+  score: "9.2",
+};
+
+export type Achievement = { title: string; detail: string; sprite: "trophy" | "medal" | "star" | "scroll" | "gem" };
+
+export const achievements: Achievement[] = [
+  { title: "₹35L enterprise ACV", detail: "closed at Anything.ai · 2026", sprite: "gem" },
+  { title: "Smart India Hackathon", detail: "top teams · 2023 & 2024", sprite: "trophy" },
+  { title: "Smart Bengal Hackathon", detail: "7th place", sprite: "medal" },
+  { title: "INNOVISION Extempore", detail: "3rd place", sprite: "medal" },
+  { title: "GirlScript Summer of Code", detail: "contributor", sprite: "star" },
+  { title: "McKinsey Forward Program", detail: "McKinsey.org learning program", sprite: "scroll" },
+  { title: "VECC visit", detail: "departmental topper", sprite: "trophy" },
 ];

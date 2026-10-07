@@ -1,5 +1,5 @@
-import Board from "./components/Board";
+import Desktop from "./components/Desktop";
 
 export default function Home() {
-  return <Board />;
+  return <Desktop />;
 }
